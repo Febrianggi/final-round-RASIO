@@ -8,7 +8,7 @@ An interactive dashboard and write-up of a multilevel (linear mixed model) analy
 
 An institution noticed that mathematics achievement varies a lot between schools. A survey randomly selected 30 schools and 30 students from each, giving 900 students in a two-level hierarchy. Students in the same school share facilities, teachers and academic environment, so their scores are not independent, and an ordinary regression would understate the standard errors of school-level variables.
 
-The dataset was provided by the competition organizers and is not included in this repository.
+The dataset was provided by the competition organizers and is included as `Final Round Data.xlsx`.
 
 | Level | Variable | Description |
 |-------|----------|-------------|
@@ -96,6 +96,24 @@ Residuals and school random effects pass normality checks (Shapiro-Wilk), the re
 
 The dashboard is a single self-contained HTML file with no server or build step. Open it in any modern browser. It includes the fonts and Chart.js inline, and it has tabs for the background, an overview, each model, data exploration, each research question, the study hours slope, diagnostics, conclusions, and a simulator that predicts a score from the fixed effects of M3.
 
+## How to reproduce
+
+The full analysis is in `FINAL_RASIO.ipynb` (Python: pandas, statsmodels, scipy, matplotlib, seaborn).
+
+- **Google Colab:** open the notebook and run all cells. The data cell asks for a file upload; choose `Final Round Data.xlsx`.
+- **Locally (Jupyter):** keep the notebook and `Final Round Data.xlsx` in the same folder, then run all cells. Install the packages first if needed: `pip install pandas openpyxl statsmodels scipy matplotlib seaborn`.
+
+A successful run prints ICC = 0.0821 in section 3 and the same model summary table as the dashboard in section 9. Every number in the dashboard comes from this notebook.
+
+## Repository contents
+
+| File | Contents |
+|------|----------|
+| `index.html` | The interactive dashboard |
+| `FINAL_RASIO.ipynb` | The analysis notebook, with outputs |
+| `Final Round Data.xlsx` | The dataset (900 students, 30 schools) |
+| `README.md`, `README.id.md` | This description in English and Indonesian |
+
 ## Data
 
-The data were supplied by the competition organizers. Check the organizers' terms before sharing the raw data, and note that the dashboard file contains the per-student values it needs for its charts.
+The data were supplied by the competition organizers. Column names in the file use dots (`study.hours`, `prior.score`, `teacher.exp`, `math.score`); the notebook renames them with underscores. In the `gender` column, `Laki-laki` means male and `Perempuan` means female.

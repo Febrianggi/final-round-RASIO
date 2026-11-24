@@ -8,7 +8,7 @@ Dashboard interaktif dan ringkasan analisis multilevel (linear mixed model) untu
 
 Sebuah lembaga melihat bahwa prestasi matematika sangat berbeda antarsekolah. Survei memilih 30 sekolah secara acak dan 30 siswa dari setiap sekolah, sehingga ada 900 siswa dalam hierarki dua level. Siswa di sekolah yang sama berbagi fasilitas, guru, dan lingkungan akademik, jadi nilai mereka tidak saling bebas. Regresi biasa akan membuat galat baku variabel tingkat sekolah terlalu kecil.
 
-Dataset disediakan oleh panitia lomba dan tidak disertakan di repositori ini.
+Dataset disediakan oleh panitia lomba dan disertakan sebagai `Final Round Data.xlsx`.
 
 | Level | Variabel | Keterangan |
 |-------|----------|------------|
@@ -96,6 +96,24 @@ Residual dan efek acak sekolah lolos uji normalitas (Shapiro-Wilk), hubungannya 
 
 Dashboard berupa satu file HTML mandiri tanpa server atau proses build. Buka di browser modern mana pun. Font dan Chart.js sudah tertanam di dalam file. Isinya berupa tab untuk latar belakang, ringkasan, setiap model, eksplorasi data, setiap pertanyaan penelitian, slope jam belajar, diagnostik, kesimpulan, dan simulator yang memprediksi nilai dari efek tetap M3.
 
+## Cara mereproduksi
+
+Seluruh analisis ada di `FINAL_RASIO.ipynb` (Python: pandas, statsmodels, scipy, matplotlib, seaborn).
+
+- **Google Colab:** buka notebook lalu jalankan semua sel. Sel data akan meminta unggahan file; pilih `Final Round Data.xlsx`.
+- **Lokal (Jupyter):** letakkan notebook dan `Final Round Data.xlsx` di folder yang sama, lalu jalankan semua sel. Pasang paketnya dulu bila perlu: `pip install pandas openpyxl statsmodels scipy matplotlib seaborn`.
+
+Notebook berhasil dijalankan bila bagian 3 mencetak ICC = 0.0821 dan bagian 9 menampilkan tabel ringkasan model yang sama dengan dashboard. Semua angka di dashboard berasal dari notebook ini.
+
+## Isi repositori
+
+| File | Isi |
+|------|-----|
+| `index.html` | Dashboard interaktif |
+| `FINAL_RASIO.ipynb` | Notebook analisis, beserta outputnya |
+| `Final Round Data.xlsx` | Dataset (900 siswa, 30 sekolah) |
+| `README.md`, `README.id.md` | Deskripsi ini dalam bahasa Inggris dan Indonesia |
+
 ## Data
 
-Data disediakan oleh panitia lomba. Periksa ketentuan panitia sebelum membagikan data mentah, dan perhatikan bahwa file dashboard memuat nilai per siswa yang dibutuhkan untuk grafiknya.
+Data disediakan oleh panitia lomba. Nama kolom di file memakai titik (`study.hours`, `prior.score`, `teacher.exp`, `math.score`); notebook mengubahnya menjadi garis bawah. Pada kolom `gender`, `Laki-laki` berarti laki-laki dan `Perempuan` berarti perempuan.
