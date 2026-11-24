@@ -1,5 +1,7 @@
 # Multilevel Analysis of Students' Mathematics Achievement
 
+**English** · [Bahasa Indonesia](README.id.md)
+
 An interactive dashboard and write-up of a multilevel (linear mixed model) analysis, built for the final round of the RASIO statistics olympiad. The case asks what drives students' mathematics scores when students are nested in schools, and whether interventions should target students, schools, or both.
 
 ## The case
@@ -33,7 +35,7 @@ There are no missing values or duplicate rows. Level 1 predictors are z-scored o
 
 ## Models
 
-All models are linear mixed models with a random school intercept. REML is used for estimation, and ML for likelihood ratio tests, AIC and BIC.
+All models are linear mixed models with a random school intercept, fitted in Python with statsmodels `MixedLM`. REML is used for estimation, and ML for likelihood ratio tests, AIC and BIC.
 
 | Model | Specification | Purpose |
 |-------|---------------|---------|
@@ -48,8 +50,8 @@ Supporting checks: OLS and cluster-robust OLS, a two-stage regression on school 
 
 | Quantity | M1 | M2 | M3 | M4 |
 |----------|----|----|----|----|
-| School variance (tau00) | 3.165 | 2.340 | 1.957 | 2.308 |
-| Student variance (sigma squared) | 35.408 | 0.507 | 0.507 | 0.354 |
+| School variance (tau00) | 3.165 | 2.340 | 1.957 | 1.876 |
+| Student variance (sigma squared) | 35.408 | 0.507 | 0.507 | 0.365 |
 | AIC (ML) | 5808.4 | 2099.7 | 2096.3 | 1834.5 |
 | BIC (ML) | 5822.8 | 2133.3 | 2139.5 | 1887.3 |
 
@@ -69,11 +71,11 @@ Robustness of the school effects:
 - teacher_exp is significant in all four specifications (M3, M4, cluster-robust OLS, two-stage) and in 29 of 30 leave-one-school-out refits.
 - facility is significant only in M4 and in 2 of 30 leave-one-school-out refits, so the evidence for it is not consistent. With only 30 schools, power at level 2 is limited, and "not significant" does not mean "no effect".
 
-The random slope for study_hours is clearly needed (LRT = 265.8, p < 0.001). The average slope is 0.307 per SD with a between-school SD of 0.759, so the benefit of extra study time differs a lot across schools. Random slopes for ses and prior_score are not supported.
+The random slope for study_hours is clearly needed (LRT = 265.8, p < 0.001). The average slope is 0.310 per SD with a between-school SD of 0.384, so the benefit of extra study time differs a lot across schools. Random slopes for ses and prior_score are not supported.
 
 ## Diagnostics
 
-Residuals and school random effects pass normality checks (Shapiro-Wilk), the relationships look linear, and the largest VIF is 1.10. M3 fails the homoscedasticity check across schools (Levene p < 0.001), which is consistent with the varying study hours effect. M4 resolves it (Levene p = 0.270).
+Residuals and school random effects pass normality checks (Shapiro-Wilk), the relationships look linear, and the largest VIF is 1.10. M3 fails the homoscedasticity check across schools (Levene p < 0.001), which is consistent with the varying study hours effect. M4 resolves it (Levene p = 0.348).
 
 ## Recommendations
 
@@ -87,7 +89,7 @@ Residuals and school random effects pass normality checks (Shapiro-Wilk), the re
 - Observational data, so the results are associations and not causal effects.
 - Only 30 schools, which limits power and makes school-level effects sensitive to individual schools.
 - Homoscedasticity across schools holds only after adding the random slope in M4.
-- The M4 inference relies on an intercept-slope correlation of 0.81 estimated from 30 schools.
+- The M4 inference relies on an intercept-slope correlation of 0.96 estimated from 30 schools.
 - The contextual model with school means is exploratory.
 
 ## The dashboard
