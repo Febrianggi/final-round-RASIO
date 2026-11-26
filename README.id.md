@@ -2,118 +2,118 @@
 
 [English](README.md) · **Bahasa Indonesia**
 
-Dashboard interaktif dan ringkasan analisis multilevel (linear mixed model) untuk babak final olimpiade statistika RASIO. Kasusnya menanyakan apa yang memengaruhi nilai matematika siswa ketika siswa bersarang di dalam sekolah, dan apakah intervensi sebaiknya menyasar siswa, sekolah, atau keduanya.
+Analisis multilevel (*linear mixed model*) dan dashboard HTML interaktif yang mengkaji faktor penentu nilai matematika pada 900 siswa yang bersarang di 30 sekolah, serta menjawab apakah intervensi sebaiknya menyasar siswa, sekolah, atau keduanya.
 
-## Kasus
-
-Sebuah lembaga melihat bahwa prestasi matematika sangat berbeda antarsekolah. Survei memilih 30 sekolah secara acak dan 30 siswa dari setiap sekolah, sehingga ada 900 siswa dalam hierarki dua level. Siswa di sekolah yang sama berbagi fasilitas, guru, dan lingkungan akademik, jadi nilai mereka tidak saling bebas. Regresi biasa akan membuat galat baku variabel tingkat sekolah terlalu kecil.
-
-Dataset disediakan oleh panitia lomba dan disertakan sebagai `Final Round Data.xlsx`.
-
-| Level | Variabel | Keterangan |
-|-------|----------|------------|
-| 1, siswa | math_score (respons) | Nilai tes matematika |
-| 1, siswa | prior_score | Kemampuan matematika sebelum pembelajaran |
-| 1, siswa | ses | Status sosial ekonomi keluarga |
-| 1, siswa | study_hours | Rata-rata jam belajar matematika per minggu |
-| 1, siswa | gender | Laki-laki atau perempuan |
-| 2, sekolah | facility | Kualitas fasilitas belajar |
-| 2, sekolah | teacher_exp | Lama pengalaman guru matematika (tahun) |
-
-Tidak ada nilai hilang maupun baris duplikat. Prediktor level 1 distandardisasi (z-score) atas 900 siswa dan prediktor level 2 atas 30 sekolah, sehingga koefisien dibaca sebagai efek per 1 SD.
+- **File dashboard interaktif:** [`index.html`](index.html)
+- **Notebook analisis & data:** [`FINAL_RASIO.ipynb`](FINAL_RASIO.ipynb) · [`Final Round Data.xlsx`](Final%20Round%20Data.xlsx)
 
 ## Pertanyaan penelitian dan jawabannya
 
-1. Berapa bagian variasi yang terletak antarsiswa dan berapa antarsekolah?
-   Sekitar 8,2% antarsekolah dan 91,8% antarsiswa (ICC = 0,082). Design effect 3,38, jadi model multilevel diperlukan.
-2. Apakah karakteristik siswa dapat menjelaskan prestasi?
-   Ya. SES, kemampuan awal, jam belajar, dan gender semuanya signifikan, dan bersama-sama menjelaskan 98,6% varians di dalam sekolah. SES adalah prediktor terkuat.
-3. Apakah karakteristik sekolah dapat menjelaskan perbedaan antarsekolah?
-   Sebagian. Pengalaman guru adalah prediktor positif yang robust. Kualitas fasilitas bernilai positif tetapi tidak konsisten signifikan.
-4. Setelah memperhitungkan kedua level, apakah perbedaan antarsekolah masih tersisa?
-   Ya. Sekitar 62% varians sekolah awal masih tersisa, dan sisa ini signifikan.
+1. **Berapa bagian variasi yang terletak antarsiswa dibanding antarsekolah?**
+   Sekitar **8,2%** berada antarsekolah dan **91,8%** antarsiswa (`ICC = 0,082`, *design effect* `3,38`), sehingga model multilevel diperlukan.
+2. **Apakah karakteristik siswa menjelaskan prestasi matematika?**
+   Ya. `ses`, `prior_score`, `study_hours`, dan `gender` semuanya signifikan (`p < 0,001`) dan bersama-sama menjelaskan **98,6%** varians di dalam sekolah. `ses` adalah prediktor terkuat.
+3. **Apakah karakteristik sekolah menjelaskan perbedaan antarsekolah?**
+   Sebagian. `teacher_exp` merupakan prediktor positif yang konsisten di berbagai spesifikasi, sedangkan `facility` bernilai positif tetapi tidak konsisten signifikan.
+4. **Apakah perbedaan antarsekolah masih tersisa setelah memperhitungkan kedua level?**
+   Ya. Sekitar **62%** varians sekolah awal masih tersisa dan signifikan (`p < 0,001`).
 
-## Model
+## Temuan utama
 
-Semua model adalah linear mixed model dengan random intercept sekolah, diestimasi di Python dengan `MixedLM` dari statsmodels. REML dipakai untuk estimasi, sedangkan ML untuk uji rasio likelihood, AIC, dan BIC.
-
-| Model | Spesifikasi | Tujuan |
-|-------|-------------|--------|
-| M1 Null | Intersep + random intercept sekolah | Dekomposisi varians dan ICC |
-| M2 Siswa | M1 + prior_score, ses, study_hours, gender | Pertanyaan 2 |
-| M3 Lengkap | M2 + facility, teacher_exp | Pertanyaan 3 dan 4 |
-| M4 Perluasan | M3 + random slope study_hours per sekolah | Heterogenitas efek jam belajar |
-
-Pemeriksaan pendukung: OLS dan OLS dengan galat baku cluster-robust, regresi dua tahap pada rata-rata sekolah, refit M3 dengan menghapus satu sekolah bergantian (leave-one-school-out), penyaringan random slope untuk ses dan prior_score, serta model kontekstual eksploratif dengan rata-rata sekolah.
-
-## Hasil utama
-
-| Besaran | M1 | M2 | M3 | M4 |
-|---------|----|----|----|----|
-| Varians sekolah (tau00) | 3,165 | 2,340 | 1,957 | 1,876 |
-| Varians siswa (sigma kuadrat) | 35,408 | 0,507 | 0,507 | 0,365 |
+| Besaran | M1 (Null) | M2 (Siswa) | M3 (Lengkap) | M4 (+ Random slope) |
+|---|---:|---:|---:|---:|
+| Varians sekolah (`tau00`) | 3,165 | 2,340 | 1,957 | 1,876 |
+| Varians siswa (`sigma^2`) | 35,408 | 0,507 | 0,507 | 0,365 |
 | AIC (ML) | 5808,4 | 2099,7 | 2096,3 | 1834,5 |
 | BIC (ML) | 5822,8 | 2133,3 | 2139,5 | 1887,3 |
 
-Efek tetap pada M3, per 1 SD:
+Efek tetap pada M3 (per 1 SD tiap prediktor):
 
-| Prediktor | Koefisien | p |
-|-----------|-----------|---|
-| ses | 5,382 | < 0,001 |
-| prior_score | 2,345 | < 0,001 |
-| gender (laki-laki) | 0,422 | < 0,001 |
-| study_hours | 0,332 | < 0,001 |
-| teacher_exp | 0,702 | 0,010 |
-| facility | 0,478 | 0,081 |
+| Prediktor | Koefisien | p-value |
+|---|---:|---:|
+| `ses` | 5,382 | < 0,001 |
+| `prior_score` | 2,345 | < 0,001 |
+| `gender` (laki-laki) | 0,422 | < 0,001 |
+| `study_hours` | 0,332 | < 0,001 |
+| `teacher_exp` | 0,702 | 0,010 |
+| `facility` | 0,478 | 0,081 |
 
-Kekokohan efek sekolah:
+- **Kekokohan efek sekolah:** `teacher_exp` tetap signifikan di keempat spesifikasi (M3, M4, OLS *cluster-robust*, dan regresi dua tahap rata-rata sekolah) serta pada **29 dari 30** refit *leave-one-school-out*. `facility` hanya signifikan di M4 dan **2 dari 30** refit; dengan 30 sekolah, kuasa uji level 2 terbatas, jadi tidak signifikan tidak berarti efeknya nol.
+- **Manfaat jam belajar berbeda antarsekolah (M4):** Menambahkan *random slope* sekolah untuk `study_hours` memperbaiki kecocokan model secara tajam (`LRT = 265,8, p < 0,001`). Rata-rata slope `0,310` per SD dengan simpangan baku antarsekolah `0,384`, menandakan tambahan jam belajar memberi dampak berbeda di tiap sekolah. *Random slope* untuk `ses` dan `prior_score` tidak didukung data.
+- **Diagnostik:** Residual dan efek acak sekolah lolos uji normalitas Shapiro-Wilk, hubungannya linear, dan VIF terbesar `1,10`. M3 gagal pada homoskedastisitas antarsekolah (`Levene p < 0,001`), lalu teratasi di M4 (`Levene p = 0,348`).
 
-- teacher_exp signifikan di keempat spesifikasi (M3, M4, OLS cluster-robust, dua tahap) dan di 29 dari 30 refit leave-one-school-out.
-- facility hanya signifikan di M4 dan di 2 dari 30 refit leave-one-school-out, jadi buktinya belum konsisten. Dengan hanya 30 sekolah, kuasa uji di level 2 terbatas, dan "tidak signifikan" tidak berarti "tidak ada efek".
+### Rekomendasi
 
-Random slope untuk study_hours jelas diperlukan (LRT = 265,8, p < 0,001). Rata-rata slope 0,310 per SD dengan SD antarsekolah 0,384, jadi manfaat tambahan jam belajar sangat berbeda antarsekolah. Random slope untuk ses dan prior_score tidak didukung data.
+- Prioritaskan dukungan di tingkat siswa, terutama bagi siswa berlatar belakang SES rendah dan kemampuan awal lemah.
+- Investasikan pada kualitas dan pengalaman guru sebagai faktor sekolah yang paling konsisten.
+- Rancang program jam belajar secara spesifik per sekolah, bukan satu pola seragam.
+- Teliti faktor sekolah tambahan karena 62% varians sekolah awal belum terjelaskan.
 
-## Diagnostik
+## Cara membaca dashboard
 
-Residual dan efek acak sekolah lolos uji normalitas (Shapiro-Wilk), hubungannya tampak linear, dan VIF terbesar 1,10. M3 gagal pada uji homoskedastisitas antarsekolah (Levene p < 0,001), sejalan dengan efek jam belajar yang berbeda antarsekolah. M4 mengatasinya (Levene p = 0,348).
+[`index.html`](index.html) adalah dashboard HTML satu berkas yang mandiri (font dan Chart.js tertanam; tanpa proses build). Jelajahi ke-12 tab pada bilah navigasi atas:
 
-## Rekomendasi
+| Kelompok tab | Tab di layar | Hal yang bisa dilihat |
+|---|---|---|
+| **Konteks & data** | **Background**, **Overview**, **Models**, **Data & EDA** | Desain survei (`30 sekolah × 30 siswa`), tabel variabel dua level, spesifikasi M1–M4, dan distribusi skor antarsekolah. |
+| **Pertanyaan inti** | **1 Variance**, **2 Student traits**, **3 School traits**, **4 Residual variance** | Dekomposisi ICC (`8,2%` antarsekolah), efek tetap terstandar, uji kekokohan `teacher_exp` vs `facility`, dan sisa varians sekolah. |
+| **Perluasan & uji** | **Study-hours slope**, **Diagnostics**, **Conclusions** | Variasi slope `study_hours` per sekolah (M4), pemeriksaan normalitas/homoskedastisitas, dan grafik nilai aktual vs prediksi (`r = 0,994`). |
+| **Alat interaktif** | **Simulator** | Geser slider `ses`, `prior_score`, `study_hours`, `facility`, `teacher_exp`, dan **Gender** untuk melihat prediksi `math_score` beserta kontribusi tiap variabel dibanding siswa rata-rata di sekolah rata-rata (efek tetap M3, efek acak sekolah = 0). |
 
-- Prioritaskan dukungan di tingkat siswa, terutama bagi siswa dengan SES rendah dan kemampuan awal yang lemah.
-- Investasikan pada kualitas dan pengalaman guru, faktor sekolah yang paling robust.
-- Rancang program jam belajar secara spesifik per sekolah, bukan satu program untuk semua.
-- Cari faktor sekolah lain, karena sebagian besar varians antarsekolah belum terjelaskan.
+## Data dan model
+
+Survei mengambil 30 sekolah dan 30 siswa per sekolah (total 900 siswa) tanpa nilai hilang maupun duplikat. Karena siswa di sekolah yang sama berbagi guru dan fasilitas, regresi biasa membuat galat baku variabel level 2 terlalu kecil.
+
+| Level | Variabel | Keterangan |
+|---|---|---|
+| 1, siswa | `math_score` (respons) | Nilai tes matematika |
+| 1, siswa | `prior_score` | Kemampuan matematika sebelum pembelajaran |
+| 1, siswa | `ses` | Status sosial ekonomi keluarga |
+| 1, siswa | `study_hours` | Rata-rata jam belajar matematika per minggu |
+| 1, siswa | `gender` | Laki-laki atau perempuan (`Laki-laki` / `Perempuan` di berkas Excel) |
+| 2, sekolah | `facility` | Kualitas fasilitas belajar |
+| 2, sekolah | `teacher_exp` | Lama pengalaman guru matematika (tahun) |
+
+Prediktor level 1 distandardisasi (z-score) atas 900 siswa dan prediktor level 2 atas 30 sekolah sehingga koefisien dibaca sebagai efek per 1 SD. Keempat model (M1 Null, M2 Siswa, M3 Lengkap, M4 + *random slope* `study_hours`) diestimasi di Python dengan `statsmodels` `MixedLM` (REML untuk estimasi; ML untuk LRT, AIC, dan BIC), dilengkapi pemeriksaan OLS *cluster-robust*, regresi dua tahap, *leave-one-school-out*, dan model kontekstual eksploratif. Di [`Final Round Data.xlsx`](Final%20Round%20Data.xlsx), nama kolom memakai titik (`study.hours`, `prior.score`, `teacher.exp`, `math.score`) lalu diubah notebook menjadi garis bawah.
 
 ## Keterbatasan
 
-- Data observasional, sehingga hasilnya berupa asosiasi, bukan efek kausal.
-- Hanya 30 sekolah, sehingga kuasa uji terbatas dan efek tingkat sekolah peka terhadap sekolah tertentu.
-- Homoskedastisitas antarsekolah baru terpenuhi setelah random slope ditambahkan di M4.
-- Inferensi M4 bergantung pada korelasi intersep-slope sebesar 0,96 yang diestimasi dari 30 sekolah.
+- Data observasional, sehingga hasil menunjukkan asosiasi dan bukan efek kausal.
+- Jumlah sekolah hanya 30, membatasi kuasa uji level 2 dan membuat efek sekolah peka terhadap sekolah tertentu.
+- Homoskedastisitas antarsekolah baru terpenuhi setelah *random slope* ditambahkan pada M4.
+- Inferensi M4 bergantung pada korelasi intersep-slope sebesar `0,96` yang diestimasi dari 30 sekolah.
 - Model kontekstual dengan rata-rata sekolah bersifat eksploratif.
 
-## Dashboard
+## Cara menjalankan di lokal dan reproduksi
 
-Dashboard berupa satu file HTML mandiri tanpa server atau proses build. Buka di browser modern mana pun. Font dan Chart.js sudah tertanam di dalam file. Isinya berupa tab untuk latar belakang, ringkasan, setiap model, eksplorasi data, setiap pertanyaan penelitian, slope jam belajar, diagnostik, kesimpulan, dan simulator yang memprediksi nilai dari efek tetap M3.
+### 1. Membuka dashboard di lokal
 
-## Cara mereproduksi
+Jalankan server HTTP lokal dari folder utama repositori:
 
-Seluruh analisis ada di `FINAL_RASIO.ipynb` (Python: pandas, statsmodels, scipy, matplotlib, seaborn).
+```bash
+python -m http.server 8000
+```
 
-- **Google Colab:** buka notebook lalu jalankan semua sel. Sel data akan meminta unggahan file; pilih `Final Round Data.xlsx`.
-- **Lokal (Jupyter):** letakkan notebook dan `Final Round Data.xlsx` di folder yang sama, lalu jalankan semua sel. Pasang paketnya dulu bila perlu: `pip install pandas openpyxl statsmodels scipy matplotlib seaborn`.
+Buka http://localhost:8000 di browser (hentikan dengan `Ctrl+C`). Karena `index.html` menyematkan Chart.js dan font langsung di dalam file, halaman ini juga bisa dibuka offline langsung dari disk di browser modern mana pun.
 
-Notebook berhasil dijalankan bila bagian 3 mencetak ICC = 0.0821 dan bagian 9 menampilkan tabel ringkasan model yang sama dengan dashboard. Semua angka di dashboard berasal dari notebook ini.
+### 2. Mereproduksi notebook analisis
+
+Seluruh alur Python berada di [`FINAL_RASIO.ipynb`](FINAL_RASIO.ipynb):
+
+- **Google Colab:** Buka [`FINAL_RASIO.ipynb`](FINAL_RASIO.ipynb) lalu jalankan semua sel. Saat sel data meminta unggahan file, pilih [`Final Round Data.xlsx`](Final%20Round%20Data.xlsx).
+- **Jupyter lokal:** Letakkan `FINAL_RASIO.ipynb` dan `Final Round Data.xlsx` di folder yang sama, pasang paket bila perlu, lalu jalankan semua sel dari atas ke bawah:
+
+```bash
+pip install pandas openpyxl statsmodels scipy matplotlib seaborn
+```
+
+Notebook berhasil dijalankan bila bagian 3 mencetak `ICC = 0.0821` dan bagian 9 menghasilkan tabel ringkasan model M1–M4 yang identik dengan dashboard.
 
 ## Isi repositori
 
 | File | Isi |
-|------|-----|
-| `index.html` | Dashboard interaktif |
-| `FINAL_RASIO.ipynb` | Notebook analisis, beserta outputnya |
-| `Final Round Data.xlsx` | Dataset (900 siswa, 30 sekolah) |
-| `README.md`, `README.id.md` | Deskripsi ini dalam bahasa Inggris dan Indonesia |
-
-## Data
-
-Data disediakan oleh panitia lomba. Nama kolom di file memakai titik (`study.hours`, `prior.score`, `teacher.exp`, `math.score`); notebook mengubahnya menjadi garis bawah. Pada kolom `gender`, `Laki-laki` berarti laki-laki dan `Perempuan` berarti perempuan.
+|---|---|
+| [`index.html`](index.html) | Dashboard interaktif mandiri |
+| [`FINAL_RASIO.ipynb`](FINAL_RASIO.ipynb) | Notebook analisis Python lengkap dengan output |
+| [`Final Round Data.xlsx`](Final%20Round%20Data.xlsx) | Dataset (900 siswa, 30 sekolah) |
+| [`README.md`](README.md), [`README.id.md`](README.id.md) | Dokumentasi dalam bahasa Inggris dan Indonesia |
